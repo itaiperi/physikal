@@ -1,0 +1,30 @@
+{
+  "name": "Changeit",
+  "version": "1.0.0",
+  "description": "Changeit is a crowdsourced volunteering platform.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.9.x",
+    "underscore": "^1.8.3",
+    "url": "^0.11.0",
+    "websocket": "^1.0.21",
+    "ws": "^0.8.0"
+  },
+  "engines": {
+    "node": "0.12.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/noodlez04/changeit"
+  },
+  "keywords": [
+    "changeit",
+    "change",
+    "volunteering",
+    "crowdsource"
+  ],
+  "license": "MIT"
+}

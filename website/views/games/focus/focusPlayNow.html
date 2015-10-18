@@ -1,0 +1,69 @@
+<html>
+<head>
+	<title>Ring Experiment</title>
+	<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" type="text/css" href="styles.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script type="text/javascript" src="canvasjs/canvasjs.min.js"></script>
+<script type="text/javascript" src="reconnecting-websocket/reconnecting-websocket.min.js"></script>
+<script src="focus.js"></script>
+<script type="text/javascript" src="main.js"></script>
+<script type="text/javascript">
+	var webSocketClient;
+	var dps = [];
+	var chart;
+	var resolutionHeight;
+	var resolutionWidth;
+	var canvasStillRatioH;
+	var canvasStillRatioW;
+	var dataLength = 500;
+
+	var mousePos = new Array();
+
+	var clX;
+	var clY;
+
+	$('.hoverable').hover(
+		function() {
+			$(this).data('inTime', new Date().getTime()); //setting inTime property to div
+		},
+		function() {
+			var outTime = new Date().getTime();       
+        var hoverTime = (outTime - $(this).data('inTime'))/1000; 
+        //console.log($('#tally').html());
+        var currScore = parseInt($('#tally').html()); 
+        console.log(currScore); 
+        //var sum = currScore + parseInt($('#tally').html(hoverTime));    
+        //console.log("currernt sum is " + sum); 
+        $('#tally').html(hoverTime + 's');
+		}
+    );
+</script>
+</head>
+<body onload="focus();">
+	<div id="ipConfigDiv">
+		<input type="text" id="ipTextBox" value="10.0.0.9" />
+		<button id="connect">Connect</button>
+		<button id="disconnect">Disconnect</button>
+	</div>
+	<br>
+	<div class="slogan">Improve your fine motoric ability</div>
+	<div class="score">Current Score: <div id="tally"></div></div>
+<div class="row">
+	<div class="hoja blob0 hoverable" id="style1">Physikal</div>
+	<div class="hoja blob hoverable" id="style2">Physikal 2</div>
+	<div class="hoja blob2 hoverable" id="style3">Physikal 3</div>
+</div>
+<div class="row" id="">
+	<div class="hoja blob0 secondLine hoverable" id="style4">Physikal 4</div>
+	<div class="hoja blob secondLine hoverable" id="style5">Physikal 5</div>
+	<div class="hoja blob2 secondLine hoverable" id="style6">Physikal 6</div>
+</div>
+<canvas id="viewport" width="1400" height="670"></canvas>
+</body>	
+</html>
+

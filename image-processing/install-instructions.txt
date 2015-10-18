@@ -1,0 +1,5 @@
+1. Install python 2.7.10 at C:\Python27 (https://www.python.org/downloads/release/python-2710/)
+2. WINDOWS: Install GCC compiler (download from web)
+3. download OpenCV (http://opencv.org/downloads.html) and copy relevant file to C:\Python27\lib\site-packages
+4. cmd "pip install numpy"
+5. run startup.bat (windows) / startup.sh (mac, linux)
