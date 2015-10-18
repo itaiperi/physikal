@@ -5,10 +5,10 @@ var canvasHeight = 670;
 
 // WebSocket message handler. when message arrives, this function handle the data.
 function webSocketMessageHandler(data) {
-    switch (dataObject.type) {
+    switch (data.type) {
         case "COORDINATE":
-            clX = dataObject.x * canvasWidth;
-            clY = dataObject.y * canvasHeight;
+            clX = data.x * canvasWidth;
+            clY = data.y * canvasHeight;
             console.log("X:", clX, ", Y:", clY);
             break;
         case "GESTURE":
@@ -17,24 +17,43 @@ function webSocketMessageHandler(data) {
 }
 
 // Handles connection to websocket with connect and disconnect buttons. takes IP from textbox
-$('#connect').click(function() {
-    if (webSocketClient) {
-        webSocketClient.close();
+function setWebsocketConnectionControls() {
+    $('#connect').click(function() {
+        if (webSocketClient) {
+            webSocketClient.close();
+        }
+        setTimeout(function() {
+            webSocketClient = createWebSocketClient($('#ipTextBox').val(), 12012, webSocketMessageHandler);
+        }, 200);
+    });
+    $('#disconnect').click(function() {
+        if (webSocketClient) {
+            webSocketClient.close();
+        }
+    });
+}
+
+$('.hoverable').hover(
+    function() {
+        $(this).data('inTime', new Date().getTime()); //setting inTime property to div
+    },
+    function() {
+        var outTime = new Date().getTime();       
+        var hoverTime = (outTime - $(this).data('inTime'))/1000; 
+        //console.log($('#tally').html());
+        var currScore = parseInt($('#tally').html()); 
+        console.log(currScore); 
+        //var sum = currScore + parseInt($('#tally').html(hoverTime));    
+        //console.log("currernt sum is " + sum); 
+        $('#tally').html(hoverTime + 's');
     }
-    setTimeout(function() {
-        webSocketClient = createWebSocketClient($('#ipTextBox').val(), 12012, webSocketMessageHandler);
-    }, 200);
-});
-$('#disconnect').click(function() {
-    if (webSocketClient) {
-        webSocketClient.close();
-    }
-});
+);
 
 // Main function that handles the websocket and canvas
 function focus() {
-    //    THIS WILL BE USED WHEN WEB SOCKET SERVER WILL BE ON LOCALHOST
-    //    webSocketClient = createWebSocketClient('localhost', 12012, webSocketMessageHandler);
+    // THIS WILL BE USED WHEN WEB SOCKET SERVER WILL BE ON LOCALHOST
+    // webSocketClient = createWebSocketClient('localhost', 12012, webSocketMessageHandler);
+    setWebsocketConnectionControls();
     var strSec=0;
     var flag = false;
     var canvas = document.getElementById("viewport"); 
