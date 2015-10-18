@@ -47,58 +47,6 @@ server.listen(port, function() {
 	console.log('Listening to port ' + port);
 });
 
-
-
-var clientConns = [];
-var motionSensorConn = null;
-
-// wsServer.on('request', function(request) {
-	
-// 	var isMotionSensor = false;
-// 	if (request.httpRequest.headers.device && request.httpRequest.headers.device == "MotionSensor") {
-// 		if (motionSensorConn) {
-// 			request.reject();
-// 			return;
-// 		} else {
-// 			var connection = motionSensorConn = request.accept(null, request.origin);
-// 			isMotionSensor = true;
-// 			Log('Connection accepted from motion sensor.');
-// 		}
-// 	} else {
-// 		var connection = request.accept(null, request.origin);
-// 		var index = clientConns.push(connection);
-// 		Log('Connection accepted from client.');
-// 	}
-
-// 	// user sent some message
-// 	connection.on('message', function(message) {
-// 		if(isMotionSensor) {
-// 			try {
-// 				jsonMessage = JSON.parse(message.utf8Data);
-// 				console.log(jsonMessage);
-// 				_.each(clientConns, function broadcast(conn, key, clientConns) {
-// 					conn.send(JSON.stringify(jsonMessage));
-// 				});
-// 			} catch (e) {
-// 				Log('Received non-JSON formatted data from motion sensor');
-// 			}
-// 		} else {
-// 			console.log(message.utf8Data);
-// 		}
-// 	});
-
-// 	// user disconnected
-// 	connection.on('close', function(connection) {
-// 		if(isMotionSensor) {
-// 			motionSensorConn = null;
-// 			Log('Motion sensor disconnected.');
-// 		} else {
-// 			clientConns.splice(index, 1);
-// 			Log('Client disconnected.');
-// 		}
-// 	});
-// });
-
 function Timestamp() {
 	return (new Date()).toLocaleString();
 }
