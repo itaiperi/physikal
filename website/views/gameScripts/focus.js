@@ -157,11 +157,11 @@ function focus() {
         cxt.stroke();
 
         cxt.beginPath();
-        cxt.arc(704,145,125,0,2*Math.PI);
+        cxt.arc(685,145,125,0,2*Math.PI);
         cxt.stroke();
 
         cxt.beginPath();
-        cxt.arc(1081,98,75,0,2*Math.PI);
+        cxt.arc(1040,98,75,0,2*Math.PI);
         cxt.stroke();
 
         cxt.beginPath();
@@ -169,11 +169,11 @@ function focus() {
         cxt.stroke();
 
         cxt.beginPath();
-        cxt.arc(726,392,70,0,2*Math.PI);
+        cxt.arc(695,392,70,0,2*Math.PI);
         cxt.stroke();
 
         cxt.beginPath();
-        cxt.arc(1125,441,120,0,2*Math.PI);
+        cxt.arc(1090,441,120,0,2*Math.PI);
         cxt.stroke();
 
         //console.log(clX + " " + clY);

@@ -1,7 +1,11 @@
 var clX, clY;
+
 var webSocketClient;
 var canvasWidth = 640;
 var canvasHeight = 480;
+//clX = 450;
+//clY = 250;
+console.log("X:", clX, ", Y:", clY);
 
 // WebSocket message handler. when message arrives, this function handle the data.
 function webSocketMessageHandler(data) {
@@ -225,6 +229,7 @@ function catchTheSquare() {
 
         // console.log(Ball);
         balls[0].drawBall();
+
     }
 
     // Draw a frame with a border
@@ -258,9 +263,9 @@ function catchTheSquare() {
         var pos = getMousePos(canvas, clX, clY);
 
         // Check if we clicked the square
-        if (pos.x >= square.x && pos.x < square.x + square.width &&
-            pos.y >= square.y && pos.y < square.y + square.height) {
 
+        if (pos.x >= square.x && pos.x <= square.x + square.width &&
+            pos.y >= square.y && pos.y <= square.y + square.height) {
             // Increase the score
             score += 1;
 
@@ -284,8 +289,8 @@ function catchTheSquare() {
     function getMousePos(canvas, clientX, clientY) {
         var rect = canvas.getBoundingClientRect();
         return {
-            x: Math.round((clientX - rect.left)/(rect.right - rect.left)*canvas.width),
-            y: Math.round((clientY - rect.top)/(rect.bottom - rect.top)*canvas.height)
+            x: clientX,// Math.round((clientX - rect.left)/(rect.right - rect.left)*canvas.width),
+            y: clientY//Math.round((clientY - rect.top)/(rect.bottom - rect.top)*canvas.height)
         };
     }
 
