@@ -40,8 +40,8 @@ function setWebsocketConnectionControls() {
 // Main function that handles the websocket and canvas
 function catchTheSquare() {
     // THIS WILL BE USED WHEN WEB SOCKET SERVER WILL BE ON LOCALHOST
-    // webSocketClient = createWebSocketClient('localhost', 12012, webSocketMessageHandler);
-    setWebsocketConnectionControls();
+    webSocketClient = createWebSocketClient('localhost', 12012, webSocketMessageHandler);
+//    setWebsocketConnectionControls();
     var currX =0;
     var currY = 0;
     // Get the canvas and context

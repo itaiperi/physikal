@@ -56,8 +56,8 @@ cities;
  */
 function main() {
 	// THIS WILL BE USED WHEN WEB SOCKET SERVER WILL BE ON LOCALHOST
-    // webSocketClient = createWebSocketClient('localhost', 12012, webSocketMessageHandler);
-    setWebsocketConnectionControls();
+    webSocketClient = createWebSocketClient('localhost', 12012, webSocketMessageHandler);
+//    setWebsocketConnectionControls();
 
 	// create game canvas and inputhandeler
 	display = new Screen(canvasWidth, canvasHeight);

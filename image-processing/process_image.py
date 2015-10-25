@@ -89,23 +89,60 @@ def classifyGesture(currentCoordinate):
 # param image: np.array. image to process
 # param lightSourceThreshold: int. threshold value to threshold by.
 # return: keypoints data
-def recognizeGesture(image, lightSourceThreshold):
+def recognizeGesture(image, lightSourceThreshold, filterAmountThreshold, filterLowerBound, filterUpperBound):
 
 	global movementDirection, lastPosition, initialGesturePosition, isRecognizingGesture
 
 	# Find all light sources in image
 	grayImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 	_, thresholdImage = cv2.threshold(grayImage, lightSourceThreshold, 255, cv2.THRESH_BINARY)
-	im2, contours, hier = cv2.findContours(thresholdImage, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-
-	thresholdImageClean = np.zeros(np.shape(thresholdImage))
+	im2, contours, hier = cv2.findContours(thresholdImage, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+	
+	lightsImage = np.zeros(np.shape(thresholdImage))
+	enclosingRectsImage = np.zeros(np.shape(thresholdImage))
 	minAreaContours = []
+	lightSourcesEnclosingRects = []
+	lightEnvironmentsImageColor = image.copy()
+	lightSourcesEnclosinRectsImage = np.zeros(np.shape(thresholdImage))
 	for contour in contours:
 		if cv2.contourArea(contour) > 30:
 			minAreaContours.append(contour)
-	cv2.drawContours(thresholdImageClean, contours, -1, 255, -1)
+			enclosingRect = cv2.boundingRect(contour)
+			rectWidth = enclosingRect[2]
+			rectHeight = enclosingRect[3]
+			enlargeScale = 0.3
+			enclosingRect = Rectangle(enclosingRect[0] - int(rectWidth*enlargeScale), enclosingRect[0] + int(rectWidth*(1+enlargeScale)), enclosingRect[1] - int(rectHeight*enlargeScale), enclosingRect[1] + int(rectHeight*(1+enlargeScale)), None, np.shape(image))
+			cv2.drawContours(lightsImage, [contour], -1, 255, -1)
+			cv2.rectangle(enclosingRectsImage, (enclosingRect.left, enclosingRect.top), (enclosingRect.right, enclosingRect.bottom), 255, -1)
+			
+			lightEnvironmentsImage = enclosingRectsImage - lightsImage
+			lightEnvironmentsImageColor[:,:,0] = lightEnvironmentsImage
+			lightEnvironmentsImageColor[:,:,1] = lightEnvironmentsImage
+			lightEnvironmentsImageColor[:,:,2] = lightEnvironmentsImage
+			lightEnvironmentsImageColor = cv2.bitwise_and(image, lightEnvironmentsImageColor)
+			
+			# Notice that in the image, X and Y coordinates are flipped - it's (Y,X,Z)
+			enclosingRectImage = lightEnvironmentsImageColor[enclosingRect.top:enclosingRect.bottom, enclosingRect.left:enclosingRect.right, :]
+			enclosingRectImageHSV = cv2.cvtColor(enclosingRectImage, cv2.COLOR_BGR2HSV)
+			enclosingRectImageFiltered = cv2.inRange(enclosingRectImageHSV, filterLowerBound, filterUpperBound)
+			enclosingRectImageFiltered = cv2.cvtColor(enclosingRectImageFiltered, cv2.COLOR_GRAY2BGR)
+			enclosingRectImageFiltered = cv2.bitwise_and(enclosingRectImage, enclosingRectImageFiltered)
+			enclosingRectImageBinary = cv2.cvtColor(enclosingRectImage, cv2.COLOR_BGR2GRAY)
+			_, enclosingRectImageBinary = cv2.threshold(enclosingRectImageBinary, 1, 255, cv2.THRESH_BINARY)
+			enclosingRectImageFilteredBinary = cv2.cvtColor(enclosingRectImageFiltered, cv2.COLOR_BGR2GRAY)
+			_, enclosingRectImageFilteredBinary = cv2.threshold(enclosingRectImageFilteredBinary, 1, 255, cv2.THRESH_BINARY)
+			imageMoments = cv2.moments(enclosingRectImageBinary, True)
+			filteredImageMoments = cv2.moments(enclosingRectImageFilteredBinary, True)
+			# moment 00 is the sum of all non-black pixels.
+			# we compare the number of pixels in filtered image with the number of pixels in the unfiltered image
+			if imageMoments["m00"] > 0 and filteredImageMoments["m00"] / imageMoments["m00"] > filterAmountThreshold:
+				# At this point, we know enough of the environment is at filter color, which means this is a valid light source!
+				lightSourcesEnclosingRects.append(enclosingRect)
+				cv2.rectangle(lightSourcesEnclosinRectsImage, (enclosingRect.left, enclosingRect.top), (enclosingRect.right, enclosingRect.bottom), 255, -1)
 	
-	moments = cv2.moments(thresholdImageClean)
+	lightSourcesImage = cv2.bitwise_and(lightSourcesEnclosinRectsImage, lightsImage)
+	
+	moments = cv2.moments(lightSourcesImage)
 	# Handle cases where light source is out of borders of camera
 	if moments["m00"] == 0:
 		gesture = classifyGesture((lastPosition[0], lastPosition[1]))
@@ -118,6 +155,8 @@ def recognizeGesture(image, lightSourceThreshold):
 	gesture = trackGesture((centerX, centerY))
 	
 	lastPosition = (centerX, centerY)
+	
+	cv2.imshow("a", lightSourcesImage)
 	
 	return gesture
 	
@@ -150,12 +189,14 @@ def findLightSourcesCoordinates(image, lightSourceThreshold, filterAmountThresho
 	grayImage = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 	_, thresholdImage = cv2.threshold(grayImage, lightSourceThreshold, 255, cv2.THRESH_BINARY)
 	thresholdImageInv = cv2.bitwise_not(thresholdImage)
+	keypoints = blobDetector.detect(thresholdImageInv)
+	
+	# Create image containing only light sources
 	thresholdImageColor = image.copy()
 	thresholdImageColor[:, :, 0] = thresholdImage
 	thresholdImageColor[:, :, 1] = thresholdImage
 	thresholdImageColor[:, :, 2] = thresholdImage
 	thresholdImageColor = cv2.bitwise_and(image, thresholdImageColor)
-	keypoints = blobDetector.detect(thresholdImageInv)
 	
 	# Mark all of the light sources' environments
 	# keypointsSquares will hold the environments coordinates of the light sources
@@ -165,7 +206,7 @@ def findLightSourcesCoordinates(image, lightSourceThreshold, filterAmountThresho
 	for keypoint in keypoints:
 		centerX = int(keypoint.pt[0])
 		centerY = int(keypoint.pt[1])
-		radius = int(keypoint.size / 2 * 1.3)
+		radius = int(keypoint.size / 2 * 1.2)
 		keypointSquare = Rectangle(centerX - radius, centerX + radius, centerY - radius, centerY + radius, keypoint, np.shape(image))
 		keypointSquares.append(keypointSquare)
 		upperleft = (keypointSquare.left, keypointSquare.top)
@@ -175,8 +216,6 @@ def findLightSourcesCoordinates(image, lightSourceThreshold, filterAmountThresho
 	# Create image with only environments of light sources
 	lightSourcesImageOriginal = cv2.bitwise_and(image, lightSourcesImage)
 	lightSourcesImageEnv = lightSourcesImageOriginal - thresholdImageColor
-	# cv2.imshow("a", lightSourcesImageOriginal)
-	# cv2.imshow("b", lightSourcesImageEnv)
 	
 	# Examine environment of light sources to see which 1 is the one we need
 	lightSourcesKeypoints = []
@@ -190,14 +229,13 @@ def findLightSourcesCoordinates(image, lightSourceThreshold, filterAmountThresho
 		keypointRectangleImageBinary = cv2.cvtColor(keypointRectangleImage, cv2.COLOR_BGR2GRAY)
 		_, keypointRectangleImageBinary = cv2.threshold(keypointRectangleImageBinary, 1, 255, cv2.THRESH_BINARY)
 		keypointRectangleImageFilteredBinary = cv2.cvtColor(keypointRectangleImageFiltered, cv2.COLOR_BGR2GRAY)
+		_, keypointRectangleImageFilteredBinary = cv2.threshold(keypointRectangleImageBinary, 1, 255, cv2.THRESH_BINARY)
 		imageMoments = cv2.moments(keypointRectangleImageBinary, True)
-		imageFilteredMoments = cv2.moments(keypointRectangleImageFilteredBinary, True)
+		filteredImageMoments = cv2.moments(keypointRectangleImageFilteredBinary, True)
 		# moment 00 is the sum of all non-black pixels.
-		# we compare the number of pixels in filtered image with the
-		# number of pixels in the unfiltered image
-		if imageMoments["m00"] > 0 and imageFilteredMoments["m00"] / imageMoments["m00"] > filterAmountThreshold:
+		# we compare the number of pixels in filtered image with the number of pixels in the unfiltered image
+		if imageMoments["m00"] > 0 and filteredImageMoments["m00"] / imageMoments["m00"] > filterAmountThreshold:
 			# At this point, we know enough of the environment is at filter color, which means this is a valid light source!
-			# print imageFilteredMoments["m00"] / imageMoments["m00"]
 			lightSourcesKeypoints.append(keypointSquare.keypoint)
 		
 	return lightSourcesKeypoints
@@ -215,8 +253,8 @@ if __name__ == "__main__":
 	capture = cv2.VideoCapture(0)
 	webcamWidth = capture.get(3)
 	webcamHeight = capture.get(4)
-	gestureThreshold = (webcamWidth / 4, webcamHeight / 4)
-	movementThreshold = (webcamWidth / 10, webcamHeight / 10)
+	gestureThreshold = (webcamWidth / 6, webcamHeight / 6)
+	movementThreshold = (webcamWidth / 14, webcamHeight / 14)
 	
 	header = ["device: ImageProcessor"]
 	ws = create_connection("ws://localhost:12012/", header = header)
@@ -226,7 +264,7 @@ if __name__ == "__main__":
 		isSingleLightSource = True
 		_, image = capture.read()
 		image = cv2.flip(image, 1)
-		gesture = recognizeGesture(image, lightSourceThreshold)
+		gesture = recognizeGesture(image, lightSourceThreshold, filterAmountThreshold, blueLowerBound, blueUpperBound)
 		if gesture is not None:
 			print gesture
 			ws.send("{{\"type\":\"{}\", \"gesture\":\"{}\"}}".format('GESTURE', gesture))
