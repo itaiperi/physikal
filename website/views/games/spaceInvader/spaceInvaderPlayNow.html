@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Space Invaders</title>
+	<!-- jQuery library -->
+    <script type="text/javascript" src="jquery/jquery-2.1.4.min.js"></script>
+      <script type="text/javascript" src="reconnecting-websocket/reconnecting-websocket.min.js"></script>
+	<script type="text/javascript" src="websocketclient.js"></script>
+	<script src="spaceInvader_helpers.js"></script>
+
+	<style>
+	canvas {
+		background-color: #000;
+		display: block;
+		position: absolute;
+		margin: auto;
+		top: 0;
+		bottom: 0;
+		left: 0;
+		right: 0;
+	}
+	</style>
+</head>
+<body>
+<div id="ipConfigDiv">
+	<input type="text" id="ipTextBox" value="10.0.0.9" />
+	<button id="connect">Connect</button>
+	<button id="disconnect">Disconnect</button>
+</div>
+<br>
+<script>
+
+// start and run the game
+main();
+</script>
+</body>
+</html>

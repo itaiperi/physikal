@@ -55,6 +55,7 @@ cities;
  * Initiate and start the game
  */
 function main() {
+
 	// THIS WILL BE USED WHEN WEB SOCKET SERVER WILL BE ON LOCALHOST
     webSocketClient = createWebSocketClient('localhost', 12012, webSocketMessageHandler);
 //    setWebsocketConnectionControls();
@@ -299,7 +300,8 @@ function init() {
 			// transform y value to local coordinate system
 			y -= this.y;
 			// get imagedata and check if opaque
-			var data = this.ctx.getImageData(x, y, 1, 1);
+			//var data = this.ctx.getImageData(x, y, 1, 1);
+			var data = this.ctx.getImageData(1, 1, 1, 1);
 			if (data.data[3] !== 0) {
 				this.generateDamage(x, y);
 				return true;
@@ -360,8 +362,13 @@ function update() {
 	// append new bullet to the bullet array if spacebar is
 	// pressed
 	//if (input.isPressed(32)) { // Space
-		bullets.push(new Bullet(tank.x + 10, tank.y, -8, 2, 6, "#fff"));
+		//bullets.push(new Bullet(tank.x + 10, tank.y, -10, 2, 6, "#fff"));
 	//}
+
+	if (Math.random() < 0.03 && aliens.length > 0) {
+		bullets.push(new Bullet(tank.x + 10, tank.y, -8, 2, 6, "#fff"));
+	}
+
 	// update all bullets position and checks
 	for (var i = 0, len = bullets.length; i < len; i++) {
 		var b = bullets[i];
